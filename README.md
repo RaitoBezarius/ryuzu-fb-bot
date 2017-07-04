@@ -12,7 +12,7 @@ Well, your usual lingo, `pip` / make your virtualenv and deploy it.
 
 # Configuration
 
-You can override all config of `.env.template.template` using environment variables.
+You can override all config of `.env.template` using environment variables.
 
 Otherwise, you have to set application-dependent stuff (tokens & API).
 
