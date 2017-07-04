@@ -45,7 +45,7 @@ GREETING_TEXT = config('GREETING_TEXT')
 FB_SHA1_SIGNATURE = hashlib.sha1(FACEBOOK_SECRET.encode('ascii')).hexdigest()
 VERIFICATION_TOKEN = config('FACEBOOK_VERIFICATION_TOKEN')
 ACCESS_TOKEN = config('FACEBOOK_ACCESS_TOKEN')
-DEBUG = config('DEBUG', default=False)
+DEBUG = config('DEBUG', cast=bool, default=False)
 
 app = Flask(__name__)
 messenger = Messager(ACCESS_TOKEN)
