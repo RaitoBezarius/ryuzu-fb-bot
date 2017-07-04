@@ -3,6 +3,8 @@ import logging.config
 from hmac import compare_digest
 
 import hashlib
+
+import hmac
 from decouple import config
 from flask import Flask, request, json, abort
 
@@ -42,7 +44,7 @@ logging.config.dictConfig(LOGGING)
 
 FACEBOOK_SECRET = config('FACEBOOK_SECRET')
 GREETING_TEXT = config('GREETING_TEXT')
-FB_SHA1_SIGNATURE = hashlib.sha1(FACEBOOK_SECRET.encode('ascii')).hexdigest()
+FB_SHA1_SIGNATURE_KEY = hashlib.sha1(FACEBOOK_SECRET.encode('ascii')).hexdigest()
 VERIFICATION_TOKEN = config('FACEBOOK_VERIFICATION_TOKEN')
 ACCESS_TOKEN = config('FACEBOOK_ACCESS_TOKEN')
 DEBUG = config('DEBUG', cast=bool, default=False)
@@ -79,11 +81,14 @@ def assert_origin_from_facebook():
         raise RuntimeError('Invalid origin')
 
     prefix, sha1_sig = signature.split('=')
+    expected = hmac.new(FB_SHA1_SIGNATURE_KEY,
+                        request.data,
+                        'sha1')
 
-    if not compare_digest(sha1_sig, FB_SHA1_SIGNATURE):
+    if not compare_digest(sha1_sig, expected):
         if DEBUG:
             raise RuntimeError('Invalid SHA-1 signature, expected: {}, received: {}'.format(
-                FB_SHA1_SIGNATURE,
+                expected,
                 sha1_sig))
         else:
             raise RuntimeError('Invalid SHA-1 signature')
