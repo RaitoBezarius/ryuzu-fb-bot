@@ -312,28 +312,30 @@ class FacebookEntry:
 
 
 class Messager:
+    BASE_URL = "https://graph.facebook.com/v2.9/{}"
+
     def __init__(self, access_token):
         self.access_token = access_token
         self.session = requests.Session()
-        self.session.headers = {
+        self.session.headers.update({
             'Content-Type': 'application/json'
+        })
+        self.session.params = {
+            'access_token': self.access_token
         }
 
     def subscribe_to_page(self):
-        return self.session.post("https://graph.facebook.com/v2.9/me/subscribed_apps?access_token={token}"
-                                 .format(token=self.access_token))
+        return self.session.post(self.BASE_URL.format("me/subscribed_apps"))
 
     def set_greeting_text(self, text):
         data = {"setting_type": "greeting", "greeting": {"text": text}}
-        return self.session.post("https://graph.facebook.com/v2.6/me/thread_settings?access_token={token}"
-                                 .format(token=self.access_token),
+        return self.session.post(self.BASE_URL.format("me/thread_settings"),
                                  data=json.dumps(data))
 
     def set_get_started_button_payload(self, payload):
         data = {"setting_type": "call_to_actions", "thread_state": "new_thread",
                 "call_to_actions": [{"payload": payload}]}
-        return self.session.post("https://graph.facebook.com/v2.6/me/thread_settings?access_token={token}"
-                                 .format(token=self.access_token),
+        return self.session.post(self.BASE_URL.format("me/thread_settings"),
                                  data=json.dumps(data))
 
     def send_text(self, user_id, text):
@@ -395,8 +397,7 @@ class Messager:
 
     def typing(self, user_id, on=True):
         data = {RECIPIENT_FIELD: {"id": user_id}, "sender_action": "typing_on" if on else "typing_off"}
-        return self.session.post("https://graph.facebook.com/v2.6/me/messages?access_token={token}".format(
-            token=self.access_token), data=json.dumps(data))
+        return self.session.post(self.BASE_URL.format("me/messages"), data=json.dumps(data))
 
     @staticmethod
     def unserialize_received_request(object_type: str, json_entries: Dict[str, Any]) -> List[FacebookMessage]:
@@ -415,8 +416,7 @@ class Messager:
         return {Recipient.ID.value: user_id}
 
     def _send(self, message_data):
-        post_message_url = "https://graph.facebook.com/v2.6/me/messages?access_token={token}".format(
-            token=self.access_token)
+        post_message_url = self.BASE_URL.format("me/messages")
         response_message = json.dumps(message_data)
         logger.debug('Message: {}'.format(response_message))
         req = self.session.post(post_message_url,

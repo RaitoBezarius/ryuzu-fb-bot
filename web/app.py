@@ -18,6 +18,8 @@ app = Flask(__name__)
 messenger = Messager(ACCESS_TOKEN)
 logger = logging.getLogger(__name__)
 
+# Announcing classification: Initial-Y Series 01, "One Who Follows", RyuZU.
+messenger.subscribe_to_page()
 messenger.set_greeting_text(GREETING_TEXT)
 
 
