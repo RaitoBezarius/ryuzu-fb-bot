@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import logging.config
 from hmac import compare_digest
 
 import hashlib
@@ -7,6 +8,38 @@ from decouple import config
 from flask import Flask, request, json, abort
 
 from facebook.messager import Messager, FacebookMessage, FacebookMessageType
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '[%(levelname)s][%(asctime)s] %(module)s: %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': config('CONSOLE_LOGGING_LEVEL', default='INFO'),
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        }
+    },
+    'loggers': {
+        'web': {
+            'handlers': ['console'],
+            'level': config('WEB_LOGGING_LEVEL', default='INFO'),
+        },
+        'facebook': {
+            'handlers': ['console'],
+            'level': config('FACEBOOK_LOGGING_LEVEL', default='INFO')
+        }
+    }
+}
+
+logging.config.dictConfig(LOGGING)
 
 FACEBOOK_SECRET = config('FACEBOOK_SECRET')
 GREETING_TEXT = config('GREETING_TEXT')
