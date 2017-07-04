@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import logging
 import logging.config
 from hmac import compare_digest
 
@@ -57,11 +56,11 @@ messenger.set_greeting_text(GREETING_TEXT)
 
 
 def process_postback_message(message: FacebookMessage):
-    logging.info('Received postback.')
+    logger.info('Received postback.')
 
 
 def process_received_message(message: FacebookMessage):
-    logging.info('Received message: {}'.format(
+    logger.info('Received message: {}'.format(
         message.text
     ))
 
