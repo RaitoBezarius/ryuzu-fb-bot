@@ -313,9 +313,9 @@ class FacebookMessage:
 class FacebookEntry:
     def __init__(self, entry: Dict[str, Any]):
         self.id = entry['id']
-        self.changed_fields = entry['changed_fields']
-        self.changes = entry['changes']
-        self.time = entry['timestamp']
+        self.changed_fields = entry.get('changed_fields', [])
+        self.changes = entry.get('changes', [])
+        self.timestamp = entry.get('timestamp')
 
         self.messages = self.process_messages(entry['messaging'])
 
