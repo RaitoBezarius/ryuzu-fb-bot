@@ -44,7 +44,6 @@ logging.config.dictConfig(LOGGING)
 
 FACEBOOK_SECRET = config('FACEBOOK_SECRET')
 GREETING_TEXT = config('GREETING_TEXT')
-FB_SHA1_SIGNATURE_KEY = hashlib.sha1(FACEBOOK_SECRET.encode('ascii')).hexdigest()
 VERIFICATION_TOKEN = config('FACEBOOK_VERIFICATION_TOKEN')
 ACCESS_TOKEN = config('FACEBOOK_ACCESS_TOKEN')
 DEBUG = config('DEBUG', cast=bool, default=False)
@@ -80,8 +79,11 @@ def assert_origin_from_facebook():
     if not signature:
         raise RuntimeError('Invalid origin')
 
+    if not signature.startswith('sha1='):
+        raise RuntimeError('Malformed signature')
+
     prefix, sha1_sig = signature.split('=')
-    expected = hmac.new(FB_SHA1_SIGNATURE_KEY,
+    expected = hmac.new(FACEBOOK_SECRET.encode('ascii'),
                         request.data,
                         'sha1').hexdigest()
 
@@ -118,6 +120,9 @@ def fb_receive_message_webhook() -> str:
             dispatchers[message.type](message)
 
         return 'OK'
+    except KeyError:
+        logger.exception('While Facebook invoked the receive webhook, an exception occurred, unexpected missing key.')
+        abort(400)
     except RuntimeError:
         logger.exception('While Facebook invoked the receive webhook, an exception occurred.')
         abort(400)
