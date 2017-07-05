@@ -4,7 +4,7 @@ from hmac import compare_digest
 
 import hmac
 from decouple import config
-from flask import Flask, request, json, abort
+from flask import Flask, request, json
 
 from facebook.messager import Messager, FacebookMessage, FacebookMessageType
 
@@ -26,6 +26,10 @@ LOGGING = {
             'formatter': 'simple'
         }
     },
+    'root': {
+        'handlers': ['console'],
+        'level': config('ROOT_LOGGING_LEVEL', default='DEBUG')  # So that higher levels can always be displayed.
+    },
     'loggers': {
         'web': {
             'handlers': ['console'],
@@ -45,7 +49,7 @@ GREETING_TEXT = config('GREETING_TEXT')
 VERIFICATION_TOKEN = config('FACEBOOK_VERIFICATION_TOKEN')
 ACCESS_TOKEN = config('FACEBOOK_ACCESS_TOKEN')
 DEBUG = config('DEBUG', cast=bool, default=False)
-ENFORCE_ORIGIN = config('ENFORCE_ORIGIN', cast=bool, default=DEBUG)
+ENFORCE_ORIGIN = config('ENFORCE_ORIGIN', cast=bool, default=(not DEBUG))
 
 app = Flask(__name__)
 messenger = Messager(ACCESS_TOKEN)
@@ -107,7 +111,7 @@ def fb_verify_webhook() -> str:
 @app.route('/callback', methods=["POST"])
 def fb_receive_message_webhook() -> str:
     try:
-        if not ENFORCE_ORIGIN:
+        if ENFORCE_ORIGIN:
             assert_origin_from_facebook()
 
         data = json.loads(request.data.decode())
