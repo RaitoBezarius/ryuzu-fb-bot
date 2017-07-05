@@ -143,8 +143,25 @@ def recognize_message_type(message: Dict[str, Any]) -> FacebookMessageType:
 
 
 class FacebookEntity:
+    USER_FIELDS = ['first_name', 'last_name', 'profile_pic', 'locale',
+                   'timezone', 'gender', 'is_payment_enabled', 'last_ad_referral']
+
     def __init__(self, user: Dict[str, Any]):
         self.id = user.get('id', None)
+
+        # User data.
+        self.first_name = None
+        self.last_name = None
+        self.profile_pic = None
+        self.locale = None
+        self.timezone = None
+        self.gender = None
+        self.is_payment_enabled = None
+        self.last_ad_referral = None
+
+    def hydrate_user_from_api(self, data: Dict[str, Any]):
+        for key, value in data.items():
+            setattr(self, key, value)  # Question to myself: json.loads should do the job and perform conversion, right?
 
     def __bool__(self):
         return self.id is not None
@@ -398,6 +415,24 @@ class Messager:
     def typing(self, user_id, on=True):
         data = {RECIPIENT_FIELD: {"id": user_id}, "sender_action": "typing_on" if on else "typing_off"}
         return self.session.post(self.BASE_URL.format("me/messages"), data=json.dumps(data))
+
+    def fetch_user(self, user_id, fields: List[str] = None) -> FacebookEntity:
+        if fields is None:
+            fields = FacebookEntity.USER_FIELDS
+
+        entity = FacebookEntity(user_id)
+        resp = self.session.get(
+            self.BASE_URL
+            .format('/{}'),
+            params={
+                'fields': ','.join(fields)
+            }
+        )
+
+        resp.raise_for_status()
+
+        entity.hydrate_user_from_api(resp.json())
+        return entity
 
     @staticmethod
     def unserialize_received_request(object_type: str, json_entries: Dict[str, Any]) -> List[FacebookMessage]:
