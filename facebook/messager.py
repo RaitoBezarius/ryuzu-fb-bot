@@ -233,6 +233,8 @@ class FacebookMessage:
     initialized = False
 
     def __init__(self, message: Dict[str, Any]):
+        self.type = recognize_message_type(message)
+
         if not self.__class__.initialized:
             self.__class__.DISPATCHERS = {
                 FacebookMessageType.received: FacebookMessage._process_received,
@@ -245,7 +247,6 @@ class FacebookMessage:
             self.DISPATCHERS = self.__class__.DISPATCHERS
 
         self._message = message
-        self.type = recognize_message_type(message)
         self.sender = FacebookEntity(message.get('sender'))
         self.recipient = FacebookEntity(message.get('recipient'))
         self.timestamp = message.get('timestamp')
