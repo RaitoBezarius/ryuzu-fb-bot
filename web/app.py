@@ -118,15 +118,16 @@ def fb_receive_message_webhook() -> str:
                 logger.info('Ignored message type: {}'.format(message.type))
                 continue
 
+            # Let's be clear, dispatchers should only enqueue into task queues.
+            # No complex and haunting work should be done here.
             dispatchers[message.type](message)
-
-        return 'OK'
     except KeyError:
         logger.exception('While Facebook invoked the receive webhook, an exception occurred, unexpected missing key.')
-        abort(400)
     except RuntimeError:
         logger.exception('While Facebook invoked the receive webhook, an exception occurred.')
-        abort(400)
+    finally:
+        # Don't unsubscribe, Facebook-chan.
+        return 'OK'
 
 
 if __name__ == '__main__':
