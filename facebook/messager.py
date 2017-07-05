@@ -132,9 +132,9 @@ class FacebookMessageType(Enum):
 
 def recognize_message_type(message: Dict[str, Any]) -> FacebookMessageType:
     guess = None
-    for key in FacebookMessageType:
-        if message.get(key):
-            guess = key
+    for msg_type in FacebookMessageType:
+        if message.get(msg_type.value):
+            guess = msg_type
 
     if guess in (FacebookMessageType.received, FacebookMessageType.echo):
         guess = FacebookMessageType.echo if message['message'].get('is_echo', False) else FacebookMessageType.received
