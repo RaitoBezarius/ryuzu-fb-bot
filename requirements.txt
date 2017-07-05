@@ -2,3 +2,4 @@ python-decouple==3.*
 Flask==0.12.*
 requests==2.18.*
 gunicorn==19.7.*
+recastai==3.1.*

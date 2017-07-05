@@ -3,6 +3,8 @@ import logging.config
 from hmac import compare_digest
 
 import hmac
+
+import recastai
 from decouple import config
 from flask import Flask, request, json
 
@@ -49,10 +51,13 @@ GREETING_TEXT = config('GREETING_TEXT')
 VERIFICATION_TOKEN = config('FACEBOOK_VERIFICATION_TOKEN')
 ACCESS_TOKEN = config('FACEBOOK_ACCESS_TOKEN')
 DEBUG = config('DEBUG', cast=bool, default=False)
+NLP_LANGUAGE = config('NLP_LANGUAGE', default='fr')
+RECAST_AI_TOKEN = config('RECAST_AI_TOKEN')
 ENFORCE_ORIGIN = config('ENFORCE_ORIGIN', cast=bool, default=(not DEBUG))
 
 app = Flask(__name__)
 messenger = Messager(ACCESS_TOKEN)
+nlp_client = recastai.Client(RECAST_AI_TOKEN, NLP_LANGUAGE)
 logger = logging.getLogger('web.app')
 
 # Announcing classification: Initial-Y Series 01, "One Who Follows", RyuZU.
@@ -68,6 +73,9 @@ def process_received_message(message: FacebookMessage):
     logger.info('Received message: {}'.format(
         message.text
     ))
+
+    response = nlp_client.request.converse_text(message.text)
+    messenger.send_text(message.sender.id, response.reply)
 
 
 dispatchers = {
