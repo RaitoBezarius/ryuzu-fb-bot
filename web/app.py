@@ -134,9 +134,11 @@ def fb_receive_message_webhook() -> str:
             dispatchers[message.type](message)
 
         logger.debug('Dispatched all messages through event processors.')
-    except KeyError:
+    except ValueError:
+        logger.exception('While Facebook invoked the receive webhook, an exception occurred, malformed data.')
+    except (KeyError, AttributeError):
         logger.exception('While Facebook invoked the receive webhook, an exception occurred, unexpected missing key.')
-    except RuntimeError:
+    except (RuntimeError, TypeError):
         logger.exception('While Facebook invoked the receive webhook, an exception occurred.')
     finally:
         # Don't unsubscribe, Facebook-chan.

@@ -269,7 +269,7 @@ class FacebookMessage:
         self.postback_payload = None
         self.referral = None
 
-        self.DISPATCHERS[self.type](message)
+        self.DISPATCHERS[self.type](self)
 
     def _process_received(self):
         message = self._message['message']
@@ -313,7 +313,7 @@ class FacebookMessage:
 
 class FacebookEntry:
     def __init__(self, entry: Dict[str, Any]):
-        self.id = entry['id']
+        self.id = entry.get('id')
         self.changed_fields = entry.get('changed_fields', [])
         self.changes = entry.get('changes', [])
         self.timestamp = entry.get('timestamp')
