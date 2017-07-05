@@ -82,7 +82,7 @@ def assert_origin_from_facebook():
 
     prefix, sha1_sig = signature.split('=')
     expected = hmac.new(FB_SHA1_SIGNATURE_KEY,
-                        request.data.encode('utf8'),
+                        request.data,
                         'sha1').hexdigest()
 
     if not compare_digest(sha1_sig, expected):
