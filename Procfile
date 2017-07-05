@@ -1,1 +1,1 @@
-web: gunicorn web:app --capture-output
+web: gunicorn web:app
